@@ -1,4 +1,4 @@
-from black_scholes import price, vega
+from blackscholes import price, vega
 
 #uses newton's method, vega tells us how fast price changes with sigma so we can zero in fast
 def findvol(marketprice,S,K,T,r,optiontype="call",guess=0.20,tol=1e-6,maxiter=100):
