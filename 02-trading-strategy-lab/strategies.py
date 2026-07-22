@@ -44,18 +44,37 @@ def pairstrade(data1, data2, window=30, numstd=1.5):
     signal[zscore>numstd]=-1
     return signal, zscore
 
+#MACD strategy is where we long when MACD line crosses above signal line, and we can short when it crosses below
+def macdstrategy(data, fast=12, slow=26, signal=9):
+    from indicators import macd
+    macdline, signalline=macd(data, fast, slow, signal)
+
+    tradesignal=pd.Series(0, index=data.index)
+    tradesignal[macdline>signalline]=1
+    tradesignal[macdline<signalline]=-1
+    return tradesignal
+
 if __name__ == '__main__':
     from data import getdata, cleandata
+    from strategies import momentum, meanreversion_rsi, meanreversion_bollinger, macdstrategy, pairstrade
+    from backtest import backtest, backtestpairs
 
     df=getdata(["SPY", "QQQ"])
     df=cleandata(df)
 
-    momentumsignal = momentum(df["SPY"])
-    rsisignal=meanreversion_rsi(df["SPY"])
-    bollingersignal=meanreversion_bollinger(df["SPY"])
-    pairsignal, zscore=pairstrade(df["SPY"], df["QQQ"])
+    momentumreturns=backtest(df["SPY"], momentum(df["SPY"]))
+    rsireturns=backtest(df["SPY"], meanreversion_rsi(df["SPY"]))
+    bollingerreturns=backtest(df["SPY"], meanreversion_bollinger(df["SPY"]))
+    macdreturns=backtest(df["SPY"], macdstrategy(df["SPY"]))
 
-    print(momentumsignal.tail(10))
-    print(rsisignal.tail(10))
-    print(bollingersignal.tail(10))
-    print(pairsignal.tail(10))
+    pairsignal, zscore=pairstrade(df["SPY"], df["QQQ"])
+    pairsreturns=backtestpairs(df["SPY"], df["QQQ"], pairsignal)
+
+    benchmarkreturns=df["SPY"].pct_change()
+
+    print("Momentum:", summary(momentumreturns))
+    print("RSI:", summary(rsireturns))
+    print("Bollinger:", summary(bollingerreturns))
+    print("MACD:", summary(macdreturns))
+    print("Pairs:", summary(pairsreturns))
+    print("Buy & Hold Benchmark:", summary(benchmarkreturns))
