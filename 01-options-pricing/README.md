@@ -15,6 +15,10 @@ Complete —> pricing engine, Greeks, implied vol solver, historical volatility,
 ## Notes
 Coding was mainly tinkered with in google colab for debugging and Claude AI was the main help with decluttering code as well as debugging. Which was mainly used for historical volatity and dashboard creation.
 
+## Photo
+<img width="1421" height="762" alt="image" src="https://github.com/user-attachments/assets/1b2701c8-5026-4ae6-88ea-83b905e44868" />
+
+
 ## How to run the dashboard
 ```
 pip install streamlit scipy numpy pandas matplotlib yfinance
