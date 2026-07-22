@@ -1,5 +1,5 @@
 import pandas as pd
-import numpy np
+import numpy as np
 import yfinance as yf
 
 def getdata(ticker, start="2018-01-01", end="2024-01-01"):
@@ -12,7 +12,7 @@ def add_momentum_avgs(data, short_window=20, long_window=50):
   return data
 
 def makesignals(data):
-  data["signal"=0
+  data["signal"]=0
   data.loc[data["SMA_short"]>data["SMA_long"],"signal"]=1
   data.loc[data["SMA_short"]<data["SMA_long"],"signal"]=-1
   return data
