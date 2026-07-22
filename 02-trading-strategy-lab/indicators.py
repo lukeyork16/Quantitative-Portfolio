@@ -15,11 +15,34 @@ def rsi(data, window=14):
     rsi=100-(100/(1+rs))
     return rsi
 
+#MACD tracks the gap between a fast and slow EMA, plus a signal line to catch crossovers
+def macd(data, fast=12, slow=26, signal=9):
+    emafast=ema(data, fast)
+    emaslow=ema(data, slow)
+    macdline=emafast - emaslow
+    signalline=macdline.ewm(span=signal, adjust=False).mean()
+    return macdline, signalline
+
+#bollinger bands: a moving average with bands above/below based on how volatile the price has been
+def bollinger(data, window=20, numstd=2):
+    middle=sma(data, window)
+    std=data.rolling(window=window).std()
+    upper=middle+(std*numstd)
+    lower=middle-(std*numstd)
+    return upper, middle, lower
+
 if __name__ == '__main__':
     from data import getdata, cleandata
     df=getdata("SPY")
     df=cleandata(df)
+
     df_sma=sma(df, 20)
     df_rsi=rsi(df, 14)
+    macdline, signalline=macd(df)
+    upper, middle, lower=bollinger(df)
     print(df_sma.tail())
     print(df_rsi.tail())
+    print(macdline.tail())
+    print(signalline.tail())
+    print(upper.tail())
+    print(lower.tail())
