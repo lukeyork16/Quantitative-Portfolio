@@ -1,31 +1,22 @@
 import pandas as pd
-import numpy np
-import yfinance as yf
 
-def getdata(ticker, start="2018-01-01", end="2024-01-01"):
-  data=yf.download(ticker, start=start, end=end, progress=False)
-  return data[["Close"]]
-
-def add_momentum_avgs(data, short_window=20, long_window=50):
-  data["SMA_short"]=data["Close"].rolling(window=short_window).mean()
-  data["SMA_long"]=data["Close"].rolling(window=long_window).mean()
-  return data
-
-def makesignals(data):
-  data["signal"=0
-  data.loc[data["SMA_short"]>data["SMA_long"],"signal"]=1
-  data.loc[data["SMA_short"]<data["SMA_long"],"signal"]=-1
-  return data
-
-def backtest(data):
-  data["dailyreturn"]=data["Close"].pct_change()
-  data["strategyreturn"]=data["signal"].shift(1)*data["dailyreturn"]
-  return data
+#works for any strategy: just needs price data and a signal series (1, 0, -1)
+def backtest(pricedata, signal):
+    dailyreturn = pricedata.pct_change()
+    strategyreturn = signal.shift(1) * dailyreturn  #shift so we trade on yesterday's signal, no lookahead
+    return strategyreturn
 
 if __name__ == '__main__':
-  df=getdata("SPY")
-  df=add_momentum_avgs(df)
-  df=makesignals(df)
-  df=backtest(df)
-  print(df[["Close", "SMA_short", "SMA_long", "signal", "strategyreturn"]].tail(10))
-  
+    from data import getdata, cleandata
+    from strategies import momentum, meanreversion_rsi, meanreversion_bollinger
+
+    df = getdata("SPY")
+    df = cleandata(df)
+
+    momentumreturns = backtest(df, momentum(df))
+    rsireturns = backtest(df, meanreversion_rsi(df))
+    bollingerreturns = backtest(df, meanreversion_bollinger(df))
+
+    print("Momentum total return:", (1+momentumreturns).prod()-1)
+    print("RSI total return:", (1+rsireturns).prod()-1)
+    print("Bollinger total return:", (1+bollingerreturns).prod()-1)
