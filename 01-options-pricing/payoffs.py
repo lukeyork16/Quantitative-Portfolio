@@ -49,4 +49,5 @@ if __name__ == '__main__':
     plt.title("Long Call Payoff (K=100, Premium=5)")
     plt.legend()
     plt.savefig("long_call_payoff.png")
+    plt.show("long_call_payoff.png")
     print("Saved long_call_payoff.png")
