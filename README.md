@@ -1,4 +1,4 @@
-# Quantitative-Portfolio
+# Quantitative Portfolio
 Quantitative finance projects covering options pricing &amp; Greeks, portfolio optimization, risk analytics, and systematic trading strategy. Created by Luke York, current student at Brigham Young University, studying Actuarial Science with a double minor in business and mathematics.
 Anticipated graduation April 2027
 ## Projects
