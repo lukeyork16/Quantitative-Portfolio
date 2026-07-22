@@ -16,7 +16,7 @@ def maxdrawdown(returns):
 #total and annualized return, plus volatility and it is put all in one summary
 def summary(returns, tradingdays=252):
     totalreturn=(1+returns).prod()-1
-    annualizedreturn=(1+returns).mean())**tradingdays-1 if False else (1+returns).mean()*tradingdays
+    annualizedreturn=returns.mean()*tradingdays
     annualizedvol=returns.std()*np.sqrt(tradingdays)
 
     return {
