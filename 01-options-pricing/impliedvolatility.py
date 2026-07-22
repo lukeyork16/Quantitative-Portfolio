@@ -1,5 +1,6 @@
 from blackscholes import price, vega
 
+#uses newton's method (taught to me by Claude and Youtube), vega then tells us how fast price changes with sigma so we can zero in fast
 def findvol(marketprice,S,K,T,r,optiontype="call",guess=0.20,tol=1e-6,maxiter=100):
     sigma=guess
     for i in range(maxiter):
@@ -9,12 +10,13 @@ def findvol(marketprice,S,K,T,r,optiontype="call",guess=0.20,tol=1e-6,maxiter=10
         if abs(diff)<tol:
             return sigma
         if v<1e-8:
-            break
+            break #vega too small here so newton gets shaky, if needed it will just switch to bisection
         sigma=sigma-diff/v
         if sigma<=0:
             sigma=1e-4
     return findvolbackup(marketprice,S,K,T,r,optiontype)
 
+#slower but never fails, just keeps cutting the search range in half til it lands at the correct range
 def findvolbackup(marketprice,S,K,T,r,optiontype="call",low=1e-4,high=5.0,tol=1e-6,maxiter=200):
     for i in range(maxiter):
         mid=(low+high)/2
@@ -28,6 +30,7 @@ def findvolbackup(marketprice,S,K,T,r,optiontype="call",low=1e-4,high=5.0,tol=1e
     return (low+high)/2
 
 if __name__ == '__main__':
+    #price something at a known volatility, then it will solve backwards and see if we land back on the same spot
     truevol=0.25
     marketprice=price(100,105,0.5,0.04,truevol,optiontype="call")
     solved=findvol(marketprice,S=100,K=105,T=0.5,r=0.04,optiontype="call")
