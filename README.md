@@ -1,8 +1,7 @@
 # Quantitative-Portfolio
 Quantitative finance projects covering options pricing &amp; Greeks, portfolio optimization, risk analytics, and systematic trading strategy.
 ## Projects
-## Projects
-| # | Project | Focus |
+| # | Project Title | Area of focus |
 |---|---------|-------|
 | 01 | [Options Pricing](./01-options-pricing) | Black-Scholes, Greeks, IV solver |
 | 02 | [Trading Strategy Lab](./02-trading-strategy-lab) | Backtesting, momentum, mean reversion, pairs |
