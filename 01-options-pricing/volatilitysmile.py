@@ -4,9 +4,13 @@ from optionchain import getchain, cleanchain, addvols
 def plotsmile(ticker):
     calls, puts, expiry, spot = getchain(ticker)
     calls = cleanchain(calls)
-    calls = addvols(calls, spot, expiry)
+    #only keep strikes that actually trade, garbage quotes come from illiquid contracts
+    calls = calls[calls["volume"]>0]
     calls["moneyness"]=calls["strike"]/spot
-    calls=calls[(calls["moneyness"]>0.8) & (calls["moneyness"]<1.2)] #keep strikes reasonably near the money
+    calls=calls[(calls["moneyness"]>0.90) & (calls["moneyness"]<1.10)] #tightened from 0.8-1.2
+    calls = addvols(calls, spot, expiry)
+    #drop anything still unreasonable, real equity index vol basically never exceeds 100%
+    calls = calls[calls["impliedvol"]<1.0]
     plt.figure(figsize=(9,5))
     plt.plot(calls["moneyness"], calls["impliedvol"]*100, marker="o", linewidth=1)
     plt.axvline(1.0, color="gray", linestyle="--", label="ATM")
