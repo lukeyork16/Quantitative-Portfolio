@@ -6,6 +6,7 @@ def plotsmile(ticker):
     calls = cleanchain(calls)
     calls = addvols(calls, spot, expiry)
     calls["moneyness"]=calls["strike"]/spot
+    calls=calls[(calls["moneyness"]>0.8) & (calls["moneyness"]<1.2)] #keep strikes reasonably near the money
     plt.figure(figsize=(9,5))
     plt.plot(calls["moneyness"], calls["impliedvol"]*100, marker="o", linewidth=1)
     plt.axvline(1.0, color="gray", linestyle="--", label="ATM")
@@ -14,6 +15,7 @@ def plotsmile(ticker):
     plt.title(f"{ticker} Volatility Smile - {expiry}")
     plt.legend()
     plt.savefig(f"{ticker}smile.png")
+    plt.show()
     print(f"Saved {ticker}smile.png")
 
 if __name__ == '__main__':
