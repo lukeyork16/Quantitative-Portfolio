@@ -3,14 +3,14 @@ from blackscholes import price, delta, gamma, vega, theta, rho
 
 st.title("Options Pricing Dashboard")
 st.write("Adjust the sliders on the left and watch the price and Greeks update in real time.")
-
+#make the side bars and sliders for adjusting
 S=st.sidebar.slider("Stock Price", 50, 200, 100)
 K=st.sidebar.slider("Strike Price", 50, 200, 100)
 T=st.sidebar.slider("Time to Expiration (years)", 0.01, 2.0, 1.0)
 r=st.sidebar.slider("Risk-Free Rate", 0.0, 0.10, 0.05)
 sigma=st.sidebar.slider("Volatility", 0.05, 1.0, 0.20)
 optiontype=st.sidebar.selectbox("Option Type", ["call", "put"])
-
+#add labels and variables
 p=price(S,K,T,r,sigma,optiontype=optiontype)
 d=delta(S,K,T,r,sigma,optiontype=optiontype)
 g=gamma(S,K,T,r,sigma)
@@ -21,6 +21,7 @@ st.metric("Price", f"{p:.2f}")
 st.caption("The fair value of the option today, given everything set in the sidebar.")
 col1,col2,col3=st.columns(3)
 col1.metric("Delta", f"{d:.4f}")
+#add captions for easier user understanding
 col1.caption("How much the price moves for every $1 move in the stock. A 0.60 delta call behaves like owning 60 shares.")
 col2.metric("Gamma", f"{g:.4f}")
 col2.caption("How fast Delta itself changes. High gamma means your exposure shifts quickly as the stock moves.")
