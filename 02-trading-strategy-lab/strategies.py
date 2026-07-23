@@ -48,7 +48,6 @@ def pairstrade(data1, data2, window=30, numstd=1.5):
 def macdstrategy(data, fast=12, slow=26, signal=9):
     from indicators import macd
     macdline, signalline=macd(data, fast, slow, signal)
-
     tradesignal=pd.Series(0, index=data.index)
     tradesignal[macdline>signalline]=1
     tradesignal[macdline<signalline]=-1
