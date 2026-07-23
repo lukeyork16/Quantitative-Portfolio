@@ -25,3 +25,31 @@ def screenstrategy(tickers, strategyfunc):
     resultsdf=pd.DataFrame(results).set_index("ticker")
     resultsdf=resultsdf.sort_values("Sharpe Ratio", ascending=False)
     return resultsdf
+
+#runs every strategy across every ticker, ranks every combo by sharpe in one big leaderboard
+def screenall(tickers, strategyoptions):
+    results=[]
+
+    for ticker in tickers:
+        try:
+            df=getdata(ticker)
+            df=cleandata(df)
+            if len(df)<100:
+                continue
+        except Exception:
+            continue
+
+        for stratname, stratfunc in strategyoptions.items():
+            try:
+                signal=stratfunc(df)
+                returns=backtest(df, signal)
+                stats=summary(returns)
+                stats["ticker"]=ticker
+                stats["strategy"]=stratname
+                results.append(stats)
+            except Exception:
+                continue
+
+    resultsdf=pd.DataFrame(results)
+    resultsdf=resultsdf.sort_values("Sharpe Ratio", ascending=False)
+    return resultsdf
