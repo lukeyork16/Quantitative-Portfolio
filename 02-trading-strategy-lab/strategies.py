@@ -54,6 +54,16 @@ def macdstrategy(data, fast=12, slow=26, signal=9):
     tradesignal[macdline<signalline]=-1
     return tradesignal
 
+#MACD strategy: long when MACD line crosses above signal line, short when it crosses below
+def macdstrategy(data, fast=12, slow=26, signal=9):
+    from indicators import macd
+    macdline, signalline = macd(data, fast, slow, signal)
+
+    tradesignal = pd.Series(0, index=data.index)
+    tradesignal[macdline > signalline] = 1
+    tradesignal[macdline < signalline] = -1
+    return tradesignal
+
 if __name__ == '__main__':
     from data import getdata, cleandata
     from strategies import momentum, meanreversion_rsi, meanreversion_bollinger, macdstrategy, pairstrade
