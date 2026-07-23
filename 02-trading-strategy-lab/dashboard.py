@@ -6,11 +6,11 @@ from data import getdata, cleandata
 from strategies import momentum, meanreversion_rsi, meanreversion_bollinger, macdstrategy, pairstrade
 from backtest import backtest, backtestpairs
 from performance import summary
-from screener import screenstrategy
+from screener import screenstrategy, screenall
+from optimization import optimizemomentum
 
 st.title("Trading Strategy Lab")
 
-#maps the dropdown label to the actual function, so we only have to change this list in one place
 strategyoptions = {
     "Momentum": momentum,
     "Mean Reversion (RSI)": meanreversion_rsi,
@@ -25,14 +25,46 @@ strategyexplanations = {
     "MACD": "Goes long when the MACD line crosses above its signal line, short when it crosses below.",
 }
 
-#a reasonably broad, liquid universe to screen across
 defaultuniverse = ["AAPL","MSFT","GOOGL","AMZN","NVDA","META","TSLA","JPM","BAC","WMT",
                     "XOM","CVX","JNJ","PFE","KO","PEP","DIS","NFLX","INTC","AMD",
                     "V","MA","HD","PG","SPY","QQQ"]
 
-mode = st.sidebar.radio("Mode", ["Analyze One Ticker", "Find Best Tickers for a Strategy"])
+mode = st.sidebar.radio("Mode", ["Top Strategies", "Analyze One Ticker", "Optimize Parameters"])
 
-if mode == "Analyze One Ticker":
+if mode == "Top Strategies":
+    st.write("Tests every strategy against every ticker and ranks every combination by Sharpe ratio, so you can see which strategy actually works best, and on what.")
+
+    tickerlist = st.sidebar.text_area("Tickers (comma separated)", ", ".join(defaultuniverse))
+    tickers = [t.strip().upper() for t in tickerlist.split(",") if t.strip()]
+
+    if st.sidebar.button("Run Full Screen"):
+        with st.spinner(f"Testing {len(strategyoptions)} strategies across {len(tickers)} tickers ({len(strategyoptions)*len(tickers)} backtests)..."):
+            resultsdf = screenall(tickers, strategyoptions)
+
+        st.subheader("Top 5 Strategy + Ticker Combinations")
+        top5 = resultsdf.head(5).reset_index(drop=True)
+        st.dataframe(top5[["ticker","strategy","Sharpe Ratio","Total Return","Max Drawdown"]].style.format({
+            "Sharpe Ratio": "{:.2f}", "Total Return": "{:.2%}", "Max Drawdown": "{:.2%}"
+        }))
+
+        if len(top5) > 0:
+            best = top5.iloc[0]
+            st.success(f"**Top pick:** {best['strategy']} on **{best['ticker']}** — Sharpe ratio of {best['Sharpe Ratio']:.2f}, total return of {best['Total Return']:.1%}, max drawdown of {best['Max Drawdown']:.1%}.")
+
+            for i in range(1, min(5, len(top5))):
+                row = top5.iloc[i]
+                st.write(f"**#{i+1}:** {row['strategy']} on {row['ticker']} — Sharpe {row['Sharpe Ratio']:.2f}")
+
+        with st.expander("Full results (all combinations tested)"):
+            st.dataframe(resultsdf.style.format({
+                "Sharpe Ratio": "{:.2f}", "Total Return": "{:.2%}", "Annualized Return": "{:.2%}",
+                "Annualized Volatility": "{:.2%}", "Max Drawdown": "{:.2%}"
+            }))
+
+        st.caption("Ranked entirely on historical data (2019-2024). A top result here reflects what worked in the past, not a guarantee it keeps working — with this many combinations tested, some outperformance is expected from randomness alone, not necessarily a repeatable edge.")
+
+
+elif mode == "Analyze One Ticker":
     ticker = st.sidebar.text_input("Ticker", "SPY")
     strategyname = st.sidebar.selectbox("Strategy", list(strategyoptions.keys()) + ["Pairs Trading"])
 
@@ -94,22 +126,20 @@ if mode == "Analyze One Ticker":
 
 
 else:
-    st.write("Runs one strategy across a broad list of tickers and ranks them by Sharpe ratio, so you can see where a given strategy has actually worked best historically.")
+    st.write("Finds the moving-average window sizes that historically maximized Sharpe ratio for the Momentum strategy, on one ticker.")
 
-    strategyname = st.sidebar.selectbox("Strategy to Screen", list(strategyoptions.keys()))
-    tickerlist = st.sidebar.text_area("Tickers (comma separated)", ", ".join(defaultuniverse))
-    tickers = [t.strip().upper() for t in tickerlist.split(",") if t.strip()]
+    ticker = st.sidebar.text_input("Ticker", "SPY")
 
-    if st.sidebar.button("Run Screener"):
-        with st.spinner(f"Running {strategyname} across {len(tickers)} tickers..."):
-            resultsdf = screenstrategy(tickers, strategyoptions[strategyname])
+    if st.sidebar.button("Run Optimization"):
+        df = getdata(ticker)
+        df = cleandata(df)
 
-        st.subheader(f"Best Tickers for {strategyname}")
-        st.dataframe(resultsdf.style.format("{:.4f}"))
+        with st.spinner("Testing window combinations..."):
+            resultsdf, best = optimizemomentum(df, range(5,30,5), range(30,100,10))
 
-        if len(resultsdf) > 0:
-            besttic = resultsdf.index[0]
-            bestsharpe = resultsdf.iloc[0]["Sharpe Ratio"]
-            st.success(f"{strategyname} has historically performed best on **{besttic}**, with a Sharpe ratio of {bestsharpe:.2f}.")
+        st.subheader(f"Best Momentum Windows for {ticker}")
+        st.write(f"Short window: **{int(best['shortwindow'])}**, Long window: **{int(best['longwindow'])}**, Sharpe: **{best['sharpe']:.2f}**")
 
-        st.caption("This is based entirely on historical data (2019-2024) and is not a guarantee of future performance. Past outperformance on a specific ticker can reflect randomness as much as a genuine, repeatable edge.")
+        st.dataframe(resultsdf.sort_values("sharpe", ascending=False).head(10).style.format({"sharpe":"{:.2f}"}))
+
+        st.caption("Optimized in-sample on the same historical period being tested — a real risk of overfitting. Out-of-sample validation on a separate time period would be the natural next check.")
