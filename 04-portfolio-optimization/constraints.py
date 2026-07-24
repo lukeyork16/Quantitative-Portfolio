@@ -27,6 +27,20 @@ def dollarallocation(weights, tickers, portfoliovalue): #turns weights into actu
             allocation[ticker]=round(weight*portfoliovalue, 2)
     return allocation
 
+def transactioncost(currentweights, targetweights, portfoliovalue, costpct=0.001): #cost to rebalance from current weights to target weights, costpct is per dollar traded
+    weightchange=np.abs(np.array(targetweights)-np.array(currentweights))
+    dollarstraded=weightchange*portfoliovalue
+    totalcost=dollarstraded.sum()*costpct
+    return totalcost, dollarstraded
+
+def netsharpeaftercosts(expreturns, cov, currentweights, targetweights, portfoliovalue, costpct=0.001, riskfree=0.0): #the sharpe ratio actually achieved once you subtract the real cost of trading into it
+    cost, dollarstraded=transactioncost(currentweights, targetweights, portfoliovalue, costpct)
+    costasreturn=cost/portfoliovalue #turn the dollar cost into a return drag
+    grossreturn=portfolioreturn(np.array(targetweights), expreturns)
+    netreturn=grossreturn-costasreturn
+    vol=portfoliovol(np.array(targetweights), cov)
+    return (netreturn-riskfree)/vol
+
 if __name__ == '__main__':
     from data import getdata, cleandata
     from optimization import dailyreturns, expectedreturns, covmatrix
@@ -56,3 +70,10 @@ if __name__ == '__main__':
     dollars=dollarallocation(constrained, tickers, portfoliovalue)
     for ticker, amount in dollars.items():
         print(f"{ticker}: ${amount:,.2f}")
+    print(f"\n=== Transaction Cost to Rebalance from Equal-Weight ===")
+    currentweights=[1/len(tickers)]*len(tickers) #assume you're starting from an equal-weight portfolio, a common real starting point
+    cost, dollarstraded=transactioncost(currentweights, constrained, portfoliovalue, costpct=0.001) #0.1% per dollar traded, a realistic retail-ish cost
+    print(f"Total cost to rebalance ${portfoliovalue:,} into the constrained portfolio: ${cost:.2f}")
+
+    netsharpe=netsharpeaftercosts(expreturns, cov, currentweights, constrained, portfoliovalue, costpct=0.001)
+    print(f"Sharpe ratio after accounting for transaction costs: {netsharpe:.4f}")
