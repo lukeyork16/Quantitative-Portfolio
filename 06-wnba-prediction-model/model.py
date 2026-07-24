@@ -1,43 +1,65 @@
 import pandas as pd
 import pickle
 from sklearn.linear_model import LogisticRegression
+
 from data import getmultipleseasons
 from features import addfeatures
 
-#trains on earlier seasons, tests on the most recent one, genuine out of sample
-def trainmodel(data, testseasons):
-    train=data[~data["season"].isin(testseasons)]
-    test=data[data["season"].isin(testseasons)]
-    featurecols=["winpctdiff","margindiff"]
-    xtrain=train[featurecols]
-    ytrain=train["homewin"]
-    xtest=test[featurecols]
-    ytest=test["homewin"]
-    model=LogisticRegression()
+def trainmodel(data, trainseasons, testseason, featurecols):
+    train = data[data["season"].isin(trainseasons)]
+    test = data[data["season"]==testseason]
+
+    xtrain = train[featurecols]
+    ytrain = train["homewin"]
+    xtest = test[featurecols]
+    ytest = test["homewin"]
+
+    model = LogisticRegression()
     model.fit(xtrain, ytrain)
 
     return model, xtrain, ytrain, xtest, ytest
-#saves the trained model to disk so it can be reused for predicting future games without retraining
+
 def savemodel(model, path="wnbamodel.pkl"):
     with open(path, "wb") as f:
         pickle.dump(model, f)
-#loads a previously saved model
+
 def loadmodel(path="wnbamodel.pkl"):
     with open(path, "rb") as f:
         return pickle.load(f)
 
-if __name__ == '__main__':
-    seasons=[2022, 2023, 2024, 2025]
-    rawgames=getmultipleseasons(seasons)
-    data=addfeatures(rawgames)
 
-    #train on everything except 2025, test purely on 2025, never seen during training
-    model, xtrain, ytrain, xtest, ytest=trainmodel(data, testseasons=[2025])
-    trainacc=model.score(xtrain, ytrain)
-    testacc=model.score(xtest, ytest)
-    print(f"Train accuracy: {trainacc:.4f}")
-    print(f"Test accuracy (out-of-sample, 2025 only): {testacc:.4f}")
-    print(f"Model coefficients: winpctdiff={model.coef_[0][0]:.4f}, margindiff={model.coef_[0][1]:.4f}")
-    print(f"Intercept (home court edge): {model.intercept_[0]:.4f}")
-    savemodel(model)
-    print("\nModel saved to wnbamodel.pkl")
+if __name__ == '__main__':
+    seasons = [2022, 2023, 2024, 2025]
+    rawgames = getmultipleseasons(seasons)
+    data = addfeatures(rawgames)
+
+    fullfeatures = ["winpctdiff","margindiff","elodiff","restdiff"]
+
+    #walk-forward cross validation: for each season, train only on seasons that came before it
+    print("=== Walk-Forward Cross-Validation ===")
+    results = []
+    for testseason in [2023, 2024, 2025]:
+        trainseasons = [s for s in seasons if s < testseason]
+
+        model, xtrain, ytrain, xtest, ytest = trainmodel(data, trainseasons, testseason, fullfeatures)
+        modelacc = model.score(xtest, ytest)
+
+        #baseline 1: home team always wins
+        homebaseline = ytest.mean()
+
+        #baseline 2: elo alone, no other features
+        eloonly, _, _, xtesteloonly, ytesteloonly = trainmodel(data, trainseasons, testseason, ["elodiff"])
+        eloacc = eloonly.score(xtesteloonly, ytesteloonly)
+
+        results.append({"testseason":testseason, "hometeamalwayswins":homebaseline, "eloonly":eloacc, "fullmodel":modelacc})
+        print(f"{testseason} — Home-always-wins: {homebaseline:.4f} | Elo-only: {eloacc:.4f} | Full model: {modelacc:.4f}")
+
+    resultsdf = pd.DataFrame(results)
+    print("\nAverage across seasons:")
+    print(resultsdf.mean(numeric_only=True))
+
+    #train the final model on everything, save it for predicting future games
+    finalmodel, xtrain, ytrain, _, _ = trainmodel(data, seasons, testseason=9999, featurecols=fullfeatures)
+    finalmodel.fit(data[fullfeatures], data["homewin"])
+    savemodel(finalmodel)
+    print("\nFinal model (trained on all seasons) saved to wnbamodel.pkl")
