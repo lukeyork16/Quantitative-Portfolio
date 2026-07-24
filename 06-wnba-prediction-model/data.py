@@ -35,6 +35,15 @@ def getgames(startdate, enddate):
 
     return pd.DataFrame(allgames)
 
+#pulls several wnba seasons at once and tags each game with its season, so we can train/test across years
+def getmultipleseasons(seasons):
+    allseasons = []
+    for year in seasons:
+        games = getgames(f"{year}-05-01", f"{year}-09-30")
+        games["season"] = year
+        allseasons.append(games)
+    return pd.concat(allseasons).reset_index(drop=True)
+
 
 if __name__ == '__main__':
     df = getgames("2025-05-01", "2025-09-30")
