@@ -42,3 +42,17 @@ if __name__ == '__main__':
     for ticker, weight in zip(tickers, unconstrained):
         if weight>0.0001:
             print(f"{ticker}: {weight:.4f}")
+    print("\n=== Constrained Max Sharpe (25% cap per position) ===")
+    constrained=maxsharpeconstrained(expreturns, cov, maxweight=0.25)
+    for ticker, weight in zip(tickers, constrained):
+        if weight>0.0001:
+            print(f"{ticker}: {weight:.4f}")
+
+    print(f"\nUnconstrained Sharpe: {-negativesharpe(unconstrained, expreturns, cov):.4f}")
+    print(f"Constrained Sharpe: {-negativesharpe(constrained, expreturns, cov):.4f}")
+
+    portfoliovalue=10000 #what would this actually look like if you had 10k to invest
+    print(f"\n=== If investing ${portfoliovalue:,} (constrained portfolio) ===")
+    dollars=dollarallocation(constrained, tickers, portfoliovalue)
+    for ticker, amount in dollars.items():
+        print(f"{ticker}: ${amount:,.2f}")
