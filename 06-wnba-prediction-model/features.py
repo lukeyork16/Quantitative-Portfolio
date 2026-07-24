@@ -1,5 +1,6 @@
 import pandas as pd
-
+pd.set_option("display.max_columns", None)
+pd.set_option("display.width", None)
 #builds a rolling win percentage for each team, as of right before each game (no lookahead)
 def addrollingwinpct(games, window=10):
     games = games.sort_values("date").reset_index(drop=True)
