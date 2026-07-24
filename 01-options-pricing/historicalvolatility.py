@@ -1,8 +1,7 @@
 import numpy as np
 import yfinance as yf
 
-def historicalvolatility(ticker, period="1y", days=252):
-    #realized volatility from actual price history, amade yearly
+def historicalvolatility(ticker, period="1y", days=252): #realized volatility from actual price history, made yearly
     data=yf.download(ticker, period=period, progress=False)
     logreturns=np.log(data["Close"]/data["Close"].shift(1)).dropna()
     dailyvol=logreturns.std()
