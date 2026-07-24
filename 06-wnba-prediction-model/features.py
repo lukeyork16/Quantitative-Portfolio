@@ -41,9 +41,35 @@ def addrollingform(games, window=10):
     )
 
     return allteamgames
+
+#days of rest each team had going into the game, and whether it's a back-to-back
+def addrestdays(games):
+    games = games.sort_values("date").reset_index(drop=True)
+
+    hometeamgames = games[["date","hometeam"]].rename(columns={"hometeam":"team"})
+    awayteamgames = games[["date","awayteam"]].rename(columns={"awayteam":"team"})
+    allteamgames = pd.concat([hometeamgames, awayteamgames]).sort_values("date")
+
+    allteamgames["lastgame"] = allteamgames.groupby("team")["date"].shift(1)
+    allteamgames["restdays"] = (allteamgames["date"] - allteamgames["lastgame"]).dt.days
+
+    games = games.merge(
+        allteamgames[["date","team","restdays"]],
+        left_on=["date","hometeam"], right_on=["date","team"], how="left"
+    ).rename(columns={"restdays":"homerest"}).drop(columns="team")
+
+    games = games.merge(
+        allteamgames[["date","team","restdays"]],
+        left_on=["date","awayteam"], right_on=["date","team"], how="left"
+    ).rename(columns={"restdays":"awayrest"}).drop(columns="team")
+
+    games["restdiff"] = games["homerest"] - games["awayrest"]
+    return games
     
 #attaches each team's rolling win pct back onto the original game-level table
 def addfeatures(games, window=10):
+    from elo import calculateelo
+
     teamform = addrollingform(games, window)
 
     games = games.merge(
@@ -59,10 +85,12 @@ def addfeatures(games, window=10):
     games["winpctdiff"] = games["homewinpct"] - games["awaywinpct"]
     games["margindiff"] = games["homemargin"] - games["awaymargin"]
 
+    games = calculateelo(games)
+    games = addrestdays(games)
+
     games = games.dropna(subset=["homewinpct","awaywinpct","homemargin","awaymargin"])
 
     return games
-
 
 
 if __name__ == '__main__':
