@@ -20,27 +20,49 @@ def addrollingwinpct(games, window=10):
 
     return alltteamgames
 
+def addrollingform(games, window=10):
+    games = games.sort_values("date").reset_index(drop=True)
+
+    hometeamgames = games[["date","hometeam","homewin"]].rename(columns={"hometeam":"team","homewin":"win"})
+    hometeamgames["margin"] = games["homescore"] - games["awayscore"]
+
+    awayteamgames = games[["date","awayteam","homewin"]].rename(columns={"awayteam":"team"})
+    awayteamgames["win"] = ~awayteamgames["homewin"]
+    awayteamgames["margin"] = games["awayscore"] - games["homescore"]
+    awayteamgames = awayteamgames.drop(columns="homewin")
+
+    allteamgames = pd.concat([hometeamgames, awayteamgames]).sort_values("date")
+
+    allteamgames["rollingwinpct"] = allteamgames.groupby("team")["win"].transform(
+        lambda x: x.shift(1).rolling(window, min_periods=3).mean()
+    )
+    allteamgames["rollingmargin"] = allteamgames.groupby("team")["margin"].transform(
+        lambda x: x.shift(1).rolling(window, min_periods=3).mean()
+    )
+
+    return allteamgames
+    
 #attaches each team's rolling win pct back onto the original game-level table
 def addfeatures(games, window=10):
-    teamform=addrollingwinpct(games, window)
+    teamform = addrollingform(games, window)
 
-    games=games.merge(
-        teamform[["date","team","rollingwinpct"]],
+    games = games.merge(
+        teamform[["date","team","rollingwinpct","rollingmargin"]],
         left_on=["date","hometeam"], right_on=["date","team"], how="left"
-    ).rename(columns={"rollingwinpct":"homewinpct"}).drop(columns="team")
+    ).rename(columns={"rollingwinpct":"homewinpct","rollingmargin":"homemargin"}).drop(columns="team")
 
-    games=games.merge(
-        teamform[["date","team","rollingwinpct"]],
+    games = games.merge(
+        teamform[["date","team","rollingwinpct","rollingmargin"]],
         left_on=["date","awayteam"], right_on=["date","team"], how="left"
-    ).rename(columns={"rollingwinpct":"awaywinpct"}).drop(columns="team")
+    ).rename(columns={"rollingwinpct":"awaywinpct","rollingmargin":"awaymargin"}).drop(columns="team")
 
-    #the actual predictive feature: the gap in recent form between the two teams
-    games["winpctdiff"]=games["homewinpct"]-games["awaywinpct"]
+    games["winpctdiff"] = games["homewinpct"] - games["awaywinpct"]
+    games["margindiff"] = games["homemargin"] - games["awaymargin"]
 
-    #drop early-season games where a team doesn't have enough history yet for a reliable rolling pct
-    games=games.dropna(subset=["homewinpct","awaywinpct"])
+    games = games.dropna(subset=["homewinpct","awaywinpct","homemargin","awaymargin"])
 
     return games
+
 
 
 if __name__ == '__main__':
