@@ -42,7 +42,7 @@ def minvarportfolio(expreturns, cov): #solves for the weights that minimize vola
 
 if __name__ == '__main__':
     from data import getdata, cleandata
-    tickers=["AAPL","MSFT","GOOGL","AMZN","SPY"]
+    tickers=["AAPL","MSFT","GOOGL","AMZN","NVDA","META","JPM","BAC","XOM","CVX","JNJ","PFE","KO","PG","WMT","DIS","V","HD","SPY","QQQ"]
     prices=getdata(tickers)
     prices=cleandata(prices)
     returns=dailyreturns(prices)
