@@ -32,11 +32,9 @@ def monthlyrebalanceweights(compositescores, topn=10, method="equal"): #builds a
     return weightshistory
 
 if __name__ == '__main__':
-    from data import getuniverse, cleanuniverse
+    from data import getuniverse, cleanuniverse, getsp500tickers
     from factors import compositescore
-    tickers=["AAPL","MSFT","GOOGL","AMZN","NVDA","META","TSLA","JPM","BAC","WFC","GS","MS",
-              "XOM","CVX","COP","JNJ","PFE","UNH","ABBV","KO","PG","WMT","COST","MCD",
-              "DIS","NFLX","V","MA","HD","LOW","BA","CAT","GE","INTC","AMD","CRM","ADBE","ORCL","IBM","CSCO"]
+    tickers=getsp500tickers()
     prices=getuniverse(tickers)
     prices=cleanuniverse(prices)
 
