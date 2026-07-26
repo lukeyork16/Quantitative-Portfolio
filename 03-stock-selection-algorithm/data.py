@@ -3,7 +3,7 @@ import numpy as np
 import yfinance as yf
 from datetime import date
 
-def getuniverse(tickers, start="2018-01-01", end=None, batchsize=50): #pulls in smaller batches so yfinance doesnt get rate limited on big universes
+def getuniverse(tickers, start="2018-01-01", end=None, batchsize=50): #pulls in smaller batches, threading off to avoid the sqlite lock error
     import time
     if end is None:
         end=date.today().strftime("%Y-%m-%d")
@@ -12,10 +12,10 @@ def getuniverse(tickers, start="2018-01-01", end=None, batchsize=50): #pulls in 
     for i in range(0, len(tickers), batchsize):
         batch=tickers[i:i+batchsize]
         print(f"Downloading batch {i//batchsize+1}: {len(batch)} tickers")
-        batchdata=yf.download(batch, start=start, end=end, progress=False)["Close"]
+        batchdata=yf.download(batch, start=start, end=end, progress=False, threads=False) #threads=False fixes the "unable to open database file" error
+        batchdata=batchdata["Close"]
         alldata.append(batchdata)
-        time.sleep(2) #short pause between batches so we dont get rate limited
-
+        time.sleep(3) #slightly longer pause since single-threaded is slower per batch
     data=pd.concat(alldata, axis=1)
     return data
 
