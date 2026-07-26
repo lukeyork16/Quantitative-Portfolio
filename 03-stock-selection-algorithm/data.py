@@ -16,10 +16,11 @@ def cleanuniverse(data): #keeps only tickers with enough history, drops rows wit
 
 def getsp500tickers(): #pulls the current sp500 list from wikipedia, needs a browser user agent or wikipedia blocks it
     import requests
+    from io import StringIO
     headers={"User-Agent": "Mozilla/5.0"}
     response=requests.get("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies", headers=headers)
-    table=pd.read_html(response.text)[0]
-    tickers=table["Symbol"].str.replace(".", "-", regex=False).tolist() #yfinance wants BRK-B not BRK.B
+    table=pd.read_html(StringIO(response.text))[0]
+    tickers=table["Symbol"].str.replace(".", "-", regex=False).tolist()
     return tickers
 
 if __name__ == '__main__':
