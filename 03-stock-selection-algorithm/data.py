@@ -3,10 +3,20 @@ import numpy as np
 import yfinance as yf
 from datetime import date
 
-def getuniverse(tickers, start="2018-01-01", end=None): #pulls price history, defaults to today if no end date given
+def getuniverse(tickers, start="2018-01-01", end=None, batchsize=50): #pulls in smaller batches so yfinance doesnt get rate limited on big universes
+    import time
     if end is None:
         end=date.today().strftime("%Y-%m-%d")
-    data=yf.download(tickers, start=start, end=end, progress=False)["Close"]
+
+    alldata=[]
+    for i in range(0, len(tickers), batchsize):
+        batch=tickers[i:i+batchsize]
+        print(f"Downloading batch {i//batchsize+1}: {len(batch)} tickers")
+        batchdata=yf.download(batch, start=start, end=end, progress=False)["Close"]
+        alldata.append(batchdata)
+        time.sleep(2) #short pause between batches so we dont get rate limited
+
+    data=pd.concat(alldata, axis=1)
     return data
 
 def cleanuniverse(data): #keeps only tickers with enough history, drops rows with any gaps
@@ -26,7 +36,7 @@ def getsp500tickers(): #pulls the current sp500 list from wikipedia, needs a bro
 if __name__ == '__main__':
     tickers=getsp500tickers()
     print(f"Pulled {len(tickers)} sp500 tickers")
-    data=getuniverse(tickers[:100]) #testing on a slice first, full 500 takes a while
+    data=getuniverse(tickers) #full universe now, batched
     data=cleanuniverse(data)
     print(data.tail())
     print(f"\nUniverse shape: {data.shape}")
