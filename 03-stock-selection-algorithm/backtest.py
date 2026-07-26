@@ -22,6 +22,14 @@ def maxdrawdown(returns): #same drawdown calc from the trading strategy lab
     drawdown=(cumulative-runningmax)/runningmax
     return drawdown.min()
 
+def spybenchmark(start="2018-01-01", end=None): #pulls spy on its own as the real market benchmark
+    import yfinance as yf
+    from datetime import date
+    if end is None:
+        end=date.today().strftime("%Y-%m-%d")
+    spy=yf.download("SPY", start=start, end=end, progress=False)["Close"]
+    return spy.pct_change()
+
 if __name__ == '__main__':
     from data import getuniverse, cleanuniverse, getsp500tickers
     from factors import compositescore
