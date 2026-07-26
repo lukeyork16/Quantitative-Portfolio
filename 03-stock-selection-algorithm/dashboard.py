@@ -19,7 +19,7 @@ def loaduniverse():
 @st.cache_data(ttl=86400)
 def runbacktest(_prices, topn): #underscore on _prices tells streamlit not to try to hash the whole dataframe, just cache by topn
     scores=compositescore(_prices)
-    weights=monthlyrebalanceweights(scores, topn=topn, method="equal")
+    weights=monthlyrebalanceweights(scores, topn=topn, method="score")
     strategyreturns=backtestselection(_prices, weights).dropna()
     benchmarkreturns=buyholdbenchmark(_prices).loc[strategyreturns.index]
     spyreturns=spybenchmark()
