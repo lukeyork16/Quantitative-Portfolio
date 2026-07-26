@@ -15,11 +15,10 @@ def printbuylist(weights, portfoliovalue=10000): #turns weights into an actual d
         print(f"{ticker}: {weight:.1%} — ${dollars:,.2f}")
 
 if __name__ == '__main__':
-    from data import getuniverse, cleanuniverse
-    tickers=["AAPL","MSFT","GOOGL","AMZN","NVDA","META","TSLA","JPM","BAC","WFC","GS","MS",
-              "XOM","CVX","COP","JNJ","PFE","UNH","ABBV","KO","PG","WMT","COST","MCD",
-              "DIS","NFLX","V","MA","HD","LOW","BA","CAT","GE","INTC","AMD","CRM","ADBE","ORCL","IBM","CSCO"]
+    from data import getuniverse, cleanuniverse, getsp500tickers
+    tickers=getsp500tickers()
     prices=getuniverse(tickers)
     prices=cleanuniverse(prices)
+
     weights=generatetodayssignal(prices, topn=10, method="equal")
     printbuylist(weights, portfoliovalue=10000)
