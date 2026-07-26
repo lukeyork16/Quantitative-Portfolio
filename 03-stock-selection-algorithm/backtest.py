@@ -28,6 +28,8 @@ def spybenchmark(start="2018-01-01", end=None): #pulls spy on its own as the rea
     if end is None:
         end=date.today().strftime("%Y-%m-%d")
     spy=yf.download("SPY", start=start, end=end, progress=False)["Close"]
+    if isinstance(spy, pd.DataFrame): #newer yfinance sometimes returns a 1-column dataframe instead of a plain series
+        spy=spy.iloc[:,0]
     return spy.pct_change()
 
 if __name__ == '__main__':
