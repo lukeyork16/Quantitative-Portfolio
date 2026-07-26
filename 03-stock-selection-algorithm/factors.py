@@ -23,10 +23,8 @@ def compositescore(prices, momentumweight=0.4, lowvolweight=0.3, reversalweight=
     return composite
 
 if __name__ == '__main__':
-    from data import getuniverse, cleanuniverse
-    tickers=["AAPL","MSFT","GOOGL","AMZN","NVDA","META","TSLA","JPM","BAC","WFC","GS","MS",
-              "XOM","CVX","COP","JNJ","PFE","UNH","ABBV","KO","PG","WMT","COST","MCD",
-              "DIS","NFLX","V","MA","HD","LOW","BA","CAT","GE","INTC","AMD","CRM","ADBE","ORCL","IBM","CSCO"]
+    from data import getuniverse, cleanuniverse, getsp500tickers
+    tickers=getsp500tickers()
     prices=getuniverse(tickers)
     prices=cleanuniverse(prices)
 
