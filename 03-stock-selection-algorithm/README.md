@@ -1,7 +1,7 @@
 # Stock Selection Algorithm
 
 ## Overview
-A multi-factor stock ranking and selection model built in Python. It scores every stock in the S&P 500 on momentum, low volatility, and short-term reversal, combines those into one composite score, and picks the top 10 to hold each month. Includes a live dashboard that shows today's actual buy list and compares the strategy's backtested performance against both an equal-weight universe and SPY.
+A multi-factor stock ranking and selection model built in Python. It scores every stock in the S&P 500 on momentum, low volatility, and short-term reversal, combines those into one composite score, and picks the top 10 to hold each month. Includes a live dashboard that shows today's actual buy list and compares the strategy's backtested performance against both an equal weight universe and SPY.
 
 ##My Process
 
@@ -57,7 +57,7 @@ To actually use this: run the dashboard once a month, right before a rebalance d
 
 ##What I Learned
 
-Building this taught me more about the mechanics of a real quant workflow than any of my other projects: how to actually pull and clean a broad universe of live data without it silently breaking (rate limits, threading bugs, delisted tickers), how to build a benchmark that isolates the actual question you're trying to answer instead of testing something else by accident, and how to read a result honestly when it's genuinely good instead of assuming something's wrong. It also taught me that "more sophisticated" (score-weighting) isn't automatically better — sometimes the simpler method is the one that actually holds up.
+Building this taught me more about the mechanics of a real quant workflow than any of my other projects: how to actually pull and clean a broad universe of live data without it silently breaking (rate limits, threading bugs, delisted tickers), how to build a benchmark that isolates the actual question you're trying to answer instead of testing something else by accident, and how to read a result honestly when it's genuinely good instead of assuming something's wrong. It also taught me that "more sophisticated" (score-weighting) isn't automatically better, and sometimes the simpler method is the one that actually holds up.
 
 ##Status
 ✅ Complete — data pipeline (full live S&P 500, rate-limit safe), factor construction, monthly-rebalanced selection, walk-forward backtest against two benchmarks, live signal generation, and the interactive dashboard are all built and tested.
@@ -71,4 +71,4 @@ First run downloads the full S&P 500 (several minutes); results are cached for 2
 - This backtest period of 2018 to 2026 includes an unusually strong bull market. Part of this result reflects a favorable period, not purely the strategy's skill — it hasn't been tested through a genuine multi-year downturn yet.
 - Factor weights (40% momentum, 30% low-vol, 30% reversal) are a reasonable starting assumption, not something optimized or tuned. A natural next step would be testing whether different weightings perform meaningfully better or worse.
 - No transaction costs are modeled in this backtest, unlike my Portfolio Optimization project monthly rebalancing across 10 positions would have some real cost that isn't reflected in these numbers.
-- This ignores fundamentals entirely (earnings, valuation, balance sheet health) — it's a purely price-based, technical model, which is a real and known limitation of this style of factor investing.
+- This ignores fundamentals entirely (earnings, valuation, balance sheet health) it's a purely price-based, technical model, which is a real and known limitation of this style of factor investing.
