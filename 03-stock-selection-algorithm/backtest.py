@@ -23,13 +23,11 @@ def maxdrawdown(returns): #same drawdown calc from the trading strategy lab
     return drawdown.min()
 
 if __name__ == '__main__':
-    from data import getuniverse, cleanuniverse
+    from data import getuniverse, cleanuniverse, getsp500tickers
     from factors import compositescore
     from selection import monthlyrebalanceweights
 
-    tickers=["AAPL","MSFT","GOOGL","AMZN","NVDA","META","TSLA","JPM","BAC","WFC","GS","MS",
-              "XOM","CVX","COP","JNJ","PFE","UNH","ABBV","KO","PG","WMT","COST","MCD",
-              "DIS","NFLX","V","MA","HD","LOW","BA","CAT","GE","INTC","AMD","CRM","ADBE","ORCL","IBM","CSCO"]
+    tickers=getsp500tickers()
     prices=getuniverse(tickers)
     prices=cleanuniverse(prices)
 
@@ -42,10 +40,17 @@ if __name__ == '__main__':
     strategyreturns=strategyreturns.dropna()
     benchmarkreturns=benchmarkreturns.loc[strategyreturns.index]
 
-    print("=== Factor Strategy vs Equal-Weight Benchmark ===")
+    print("=== Factor Strategy vs Equal-Weight Universe Benchmark ===")
     print(f"Strategy total return: {(1+strategyreturns).prod()-1:.4f}")
     print(f"Benchmark total return: {(1+benchmarkreturns).prod()-1:.4f}")
     print(f"Strategy Sharpe: {sharpe(strategyreturns):.4f}")
     print(f"Benchmark Sharpe: {sharpe(benchmarkreturns):.4f}")
     print(f"Strategy Max Drawdown: {maxdrawdown(strategyreturns):.4f}")
     print(f"Benchmark Max Drawdown: {maxdrawdown(benchmarkreturns):.4f}")
+
+    spyreturns=spybenchmark()
+    spyreturns=spyreturns.loc[spyreturns.index.isin(strategyreturns.index)]
+    print(f"\n=== vs SPY ===")
+    print(f"SPY total return: {(1+spyreturns).prod()-1:.4f}")
+    print(f"SPY Sharpe: {sharpe(spyreturns):.4f}")
+    print(f"SPY Max Drawdown: {maxdrawdown(spyreturns):.4f}")
