@@ -3,7 +3,7 @@ from data import getdata, cleandata
 from backtest import backtest
 from performance import summary
 
-def screenstrategy(tickers, strategyfunc): #runs one strategy across a list of tickers, ranks by sharpe
+def screenstrategy(tickers, strategyfunc): #runs one strategy across a list of tickers then ranks by sharpe
     results=[]
     for ticker in tickers:
         try:
@@ -22,7 +22,7 @@ def screenstrategy(tickers, strategyfunc): #runs one strategy across a list of t
     resultsdf=resultsdf.sort_values("Sharpe Ratio", ascending=False)
     return resultsdf
 
-def screenall(tickers, strategyoptions): #runs every strategy across every ticker, one big leaderboard
+def screenall(tickers, strategyoptions): #runs every strategy across every ticker one big leaderboard
     results=[]
     for ticker in tickers:
         try:
