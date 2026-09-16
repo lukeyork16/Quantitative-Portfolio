@@ -4,11 +4,11 @@ import yfinance as yf
 
 def getdata(tickers, start="2019-01-01", end="2024-01-01"): #pulls closing prices for one or several tickers at once
     data=yf.download(tickers, start=start, end=end, progress=False)["Close"]
-    if isinstance(data, pd.DataFrame) and data.shape[1]==1: #single ticker, make sure we get a plain series not a weird shaped table
+    if isinstance(data, pd.DataFrame) and data.shape[1]==1: #single ticker make sure we get a plain series not a weird shaped table
         data=data.iloc[:, 0]
     return data
 
-def cleandata(data): #drops any date where data is missing, keeps everything aligned
+def cleandata(data): #drops any date where data is missing
     data=data.dropna(axis=0, how="any")
     return data
 
