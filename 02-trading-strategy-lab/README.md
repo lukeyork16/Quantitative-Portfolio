@@ -48,7 +48,7 @@ streamlit run dashboard.py
 
 ## Notes & Findings
 - All backtests shift signals forward one day before applying them to returns, avoiding lookahead bias (using information not actually available at the time of the trade).
-- Pairs trading between two closely correlated ETFs (e.g. SPY/QQQ) showed limited edge, since the spread rarely drifts far from its mean — pairs trading tends to perform better on two individual stocks within the same narrow industry, where the relationship is tighter.
+- Pairs trading between two closely correlated ETFs (e.g. SPY/QQQ) showed limited edge, since the spread rarely drifts far from its meanv and pairs trading tends to perform better on two individual stocks within the same narrow industry, where the relationship is tighter.
 - Parameter optimization and the strategy screener are both run in-sample only; a natural next step would be out-of-sample testing (validating the best-performing combinations on a separate, later time period) to check whether the edge holds up rather than reflecting overfitting to the historical window tested.
 
 - Used Claude code for bugging on dashboard, technical clarification on methods to select best strategy, pulling tickers, and grammar and formatting for code.
