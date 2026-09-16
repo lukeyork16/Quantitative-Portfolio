@@ -5,11 +5,11 @@ def momentumfactor(data, lookback=90): #ranks stocks by trailing return over the
     trailingreturn=data.pct_change(periods=lookback)
     return trailingreturn
 
-def longshortportfolio(factorscores): #longs the top decile by factor score, shorts the bottom decile
+def longshortportfolio(factorscores): #longs the top decile by factor score and shorts the bottom decile
     ranked=factorscores.rank(axis=1, pct=True) #ranks each row across all stocks as a percentile
     signal=pd.DataFrame(0, index=factorscores.index, columns=factorscores.columns)
-    signal[ranked>=0.8]=1 #top 20% by factor score, go long
-    signal[ranked<=0.2]=-1 #bottom 20% by factor score, go short
+    signal[ranked>=0.8]=1 #top 20% by factor score will make it go long
+    signal[ranked<=0.2]=-1 #bottom 20% by factor score will make it go short
     return signal
 
 if __name__ == '__main__':
