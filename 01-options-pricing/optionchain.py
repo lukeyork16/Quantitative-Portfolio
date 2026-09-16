@@ -2,7 +2,7 @@ import pandas as pd
 import yfinance as yf
 from impliedvolatility import findvol
 
-def getchain(ticker, expiryindex=2): #bumped default to index 2 to skip 0DTE/weekly noise, land on a cleaner monthly-ish expiry
+def getchain(ticker, expiryindex=2): #This just bumped default to index 2 to skip 0DTE or the weekly noise
     stock=yf.Ticker(ticker)
     expiries=stock.options
     expiry=expiries[expiryindex]
@@ -12,13 +12,13 @@ def getchain(ticker, expiryindex=2): #bumped default to index 2 to skip 0DTE/wee
     spot=stock.history(period="1d")["Close"].iloc[-1]
     return calls, puts, expiry, spot
 
-def cleanchain(chain): #when bid/ask are both 0 (stale, no quote), falls back to lastPrice instead
+def cleanchain(chain): #when bid and ask are both 0 this just falls back to lastPrice instead
     chain=chain.copy()
     chain["mid"]=(chain["bid"]+chain["ask"])/2
     chain.loc[chain["mid"]==0, "mid"]=chain["lastPrice"]
-    return chain[chain["mid"]>0] #drop anything still zero, truly no data
+    return chain[chain["mid"]>0] #danything that is still 0 just gets dropped here.
 
-def addvols(chain, spot, expiry, r=0.04): #for every strike, solve what vol the market is implying
+def addvols(chain, spot, expiry, r=0.04): #for every strike
     chain=chain.copy()
     T=(pd.Timestamp(expiry)-pd.Timestamp.today()).days/365
     T=max(T, 1/365) #dont let T hit zero right on expiry day
