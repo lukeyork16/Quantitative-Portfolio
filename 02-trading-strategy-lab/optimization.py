@@ -3,12 +3,12 @@ from strategies import momentum
 from backtest import backtest
 from performance import sharpe
 
-def optimizemomentum(data, shortrange, longrange): #tries short/long window combos for momentum, returns the best by sharpe
+def optimizemomentum(data, shortrange, longrange): #tries short and long window combos for momentum then it returns the best by sharpe
     results=[]
     for shortwindow in shortrange:
         for longwindow in longrange:
             if shortwindow>=longwindow:
-                continue #short window has to be shorter than long window, skip nonsense combos
+                continue #short window has to be shorter than long window this will skip nonsense combos
             signal=momentum(data, shortwindow, longwindow)
             returns=backtest(data, signal)
             sharperatio=sharpe(returns)
