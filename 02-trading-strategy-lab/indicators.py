@@ -1,10 +1,10 @@
-def sma(data, window=20): #simple average
+def sma(data, window=20): #average
     return data.rolling(window=window).mean()
 
-def ema(data, span=20): #exponential moving average, weights recent prices more than a regular average
+def ema(data, span=20): #exponential moving average and weights recent prices more than a regular average
     return data.ewm(span=span, adjust=False).mean()
 
-def rsi(data, window=14): #momentum measure scaled 0-100, above 70 overbought, below 30 oversold
+def rsi(data, window=14): #momentum measure scaled 0-100 if it is above 70 overbought and if it is below 30 oversold
     delta=data.diff()
     gain=delta.where(delta>0, 0)
     loss=-delta.where(delta<0, 0)
@@ -14,7 +14,7 @@ def rsi(data, window=14): #momentum measure scaled 0-100, above 70 overbought, b
     rsi=100-(100/(1+rs))
     return rsi
 
-def macd(data, fast=12, slow=26, signal=9): #gap between a fast and slow EMA, plus a signal line to catch crossovers
+def macd(data, fast=12, slow=26, signal=9): #gap between a fast and slow EMA also shows plus a signal line to catch crossovers
     emafast=ema(data, fast)
     emaslow=ema(data, slow)
     macdline=emafast-emaslow
