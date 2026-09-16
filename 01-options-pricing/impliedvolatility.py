@@ -1,6 +1,6 @@
 from blackscholes import price, vega
 
-def findvol(marketprice,S,K,T,r,optiontype="call",guess=0.20,tol=1e-6,maxiter=100): #newton's method, vega tells us how fast price changes with sigma
+def findvol(marketprice,S,K,T,r,optiontype="call",guess=0.20,tol=1e-6,maxiter=100): # newtons method, the vega tells us how fast price changes with the sigma
     sigma=guess
     for i in range(maxiter):
         modelprice=price(S,K,T,r,sigma,optiontype=optiontype)
@@ -9,13 +9,13 @@ def findvol(marketprice,S,K,T,r,optiontype="call",guess=0.20,tol=1e-6,maxiter=10
         if abs(diff)<tol:
             return sigma
         if v<1e-8:
-            break #vega too small here, newton gets shaky, switch to bisection instead
+            break #vega gets too too small here newton gets shaky so I can switch to bisection instead
         sigma=sigma-diff/v
         if sigma<=0:
             sigma=1e-4
     return findvolbackup(marketprice,S,K,T,r,optiontype)
 
-def findvolbackup(marketprice,S,K,T,r,optiontype="call",low=1e-4,high=5.0,tol=1e-6,maxiter=200): #slower but never fails, keeps cutting the range in half
+def findvolbackup(marketprice,S,K,T,r,optiontype="call",low=1e-4,high=5.0,tol=1e-6,maxiter=200): #slower but just keeps cutting the range in half
     for i in range(maxiter):
         mid=(low+high)/2
         modelprice=price(S,K,T,r,mid,optiontype=optiontype)
